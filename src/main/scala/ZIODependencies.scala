@@ -18,9 +18,19 @@ object ZIODependencies extends ZIOAppDefault:
            _ <- userDatabase.insert(user)
         yield ()
 
+   object UserSubscription:
+      def create(
+        emailService: EmailService,
+        userDatabase: UserDatabase
+      ): UserSubscription =
+        UserSubscription(emailService, userDatabase)
+
    class EmailService:
       def email(user: User): Task[Unit] =
         ZIO.succeed(s"You've just been subscribed, ${user.name}")
+   object EmailService:
+      def create(): EmailService =
+        EmailService()
 
    class UserDatabase(connectionPool: ConnectionPool):
       def insert(user: User): Task[Unit] =
@@ -28,16 +38,34 @@ object ZIODependencies extends ZIOAppDefault:
            connection <- connectionPool.get
            _ <- connection.runQuery(s"Insert $user into database")
         yield ()
+   object UserDatabase:
+      def create(connectionPool: ConnectionPool): UserDatabase =
+        UserDatabase(connectionPool)
 
    class ConnectionPool(nConnections: Int):
       def get: Task[Connection] =
-        ZIO.succeed(println("Acquired connection.")) *> ZIO.succeed(
-          Connection()
+        ZIO.succeed(
+          println(s"Acquired connection out of $nConnections connections.")
         )
+          *> ZIO.succeed(
+            Connection()
+          )
+   object ConnectionPool:
+      def create(nConnections: Int): ConnectionPool =
+        ConnectionPool(nConnections)
 
    case class Connection():
       def runQuery(query: String): Task[Unit] =
         ZIO.succeed(println(s"Running query: $query"))
+
+   val subscriptionService = ZIO.succeed( // Dependency injection
+     UserSubscription.create(
+       EmailService.create(),
+       UserDatabase.create(
+         ConnectionPool.create(8)
+       )
+     )
+   )
 
    import scala.compiletime.uninitialized
    var later: Int = uninitialized
