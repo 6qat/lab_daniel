@@ -79,3 +79,23 @@ def subscribe_v2(user: User): ZIO[UserSubscription, Throwable, Unit] =
       sub <- ZIO.service[UserSubscription]
       _ <- sub.subscribeUser(user)
   yield ()
+
+/** ZLayers
+  */
+
+val connectionPoolLayer: ZLayer[Any, Nothing, ConnectionPool] =
+  ZLayer.succeed(ConnectionPool.create(8))
+
+val databaseLayer: ZLayer[ConnectionPool, Nothing, UserDatabase] =
+  ZLayer.fromFunction(UserDatabase.create _)
+
+val emailServiceLayer: ZLayer[Any, Nothing, EmailService] =
+  ZLayer.fromFunction(EmailService.create _)
+
+val userSubscriptionServiceLayer: ZLayer[EmailService & UserDatabase, Nothing, UserSubscription] =
+  ZLayer.fromFunction(UserSubscription.create _)
+
+// composing layers
+
+val databaseLayerFull: ZLayer[Any, Nothing, UserDatabase] =
+  connectionPoolLayer >>> databaseLayer
