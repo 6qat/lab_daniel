@@ -108,3 +108,8 @@ val subscriptionRequirementsLayer
 
 val userSubscriptionLayer: ZLayer[Any, Nothing, UserSubscription] =
   subscriptionRequirementsLayer >>> userSubscriptionServiceLayer
+
+val userSubscriptionLayer_v2: ZLayer[Any, Nothing, UserSubscription] =
+  databaseLayerFull ++ emailServiceLayer >>> userSubscriptionLayer
+
+// best practice: create layers in the companion object of the service you are exposing

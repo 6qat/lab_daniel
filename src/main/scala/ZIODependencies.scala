@@ -25,13 +25,4 @@ object ZIODependencies extends ZIOAppDefault:
     later = 0
 
     // program  // program_v2.provide(ZLayer.fromZIO(subscriptionService))
-    override def run = program_v2.provide(
-      ZLayer.succeed( // Dependency injection
-        UserSubscription.create(
-          EmailService.create(),
-          UserDatabase.create(
-            ConnectionPool.create(8)
-          )
-        )
-      )
-    )
+    override def run = program_v2.provide(userSubscriptionLayer_v2)
