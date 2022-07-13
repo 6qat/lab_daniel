@@ -74,8 +74,14 @@ object ZIODependencies extends ZIOAppDefault:
         _ <- sub.subscribeUser(user)
      yield ()
 
+   val program: Task[Unit] =
+     for
+        _ <- subscribe(User("User1", "email1"))
+        _ <- subscribe(User("User2", "email2"))
+     yield ()
+
    import scala.compiletime.uninitialized
    var later: Int = uninitialized
    later = 0
 
-   override def run = subscribe(User("Guilherme", "guiga@usa.net"))
+   override def run = program
