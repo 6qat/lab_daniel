@@ -2,6 +2,8 @@ package tc.lab.daniel
 
 import zio.*
 
+// best practice: create layers in the companion object of the service you are exposing
+
 class UserSubscription(
     emailService: EmailService,
     userDatabase: UserDatabase
@@ -121,4 +123,4 @@ val userSubscriptionLayer: ZLayer[Any, Nothing, UserSubscription] =
 val userSubscriptionLayer_v2: ZLayer[Any, Nothing, UserSubscription] =
   databaseLayerFull ++ emailServiceLayer >>> userSubscriptionLayer
 
-// best practice: create layers in the companion object of the service you are exposing
+
