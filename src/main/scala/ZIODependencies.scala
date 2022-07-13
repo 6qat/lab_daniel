@@ -58,17 +58,24 @@ object ZIODependencies extends ZIOAppDefault:
       def runQuery(query: String): Task[Unit] =
         ZIO.succeed(println(s"Running query: $query"))
 
-   val subscriptionService = ZIO.succeed( // Dependency injection
-     UserSubscription.create(
-       EmailService.create(),
-       UserDatabase.create(
-         ConnectionPool.create(8)
+   val subscriptionService: UIO[UserSubscription] =
+     ZIO.succeed( // Dependency injection
+       UserSubscription.create(
+         EmailService.create(),
+         UserDatabase.create(
+           ConnectionPool.create(8)
+         )
        )
      )
-   )
+
+   def subscribe(user: User): Task[Unit] =
+     for
+        sub <- subscriptionService
+        _ <- sub.subscribeUser(user)
+     yield ()
 
    import scala.compiletime.uninitialized
    var later: Int = uninitialized
    later = 0
 
-   override def run = ???
+   override def run = subscribe(User("Guilherme", "guiga@usa.net"))
