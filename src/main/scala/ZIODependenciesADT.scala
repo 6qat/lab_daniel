@@ -4,6 +4,8 @@ import zio.*
 
 // best practice: create layers in the companion object of the service you are exposing
 
+case class User(name: String, email: String)
+
 class UserSubscription(
     emailService: EmailService,
     userDatabase: UserDatabase
@@ -23,8 +25,6 @@ object UserSubscription:
 
     val live: ZLayer[EmailService & UserDatabase, Nothing, UserSubscription] =
       ZLayer.fromFunction(create _)
-
-case class User(name: String, email: String)
 
 class EmailService:
     def email(user: User): Task[Unit] =
@@ -67,4 +67,3 @@ object ConnectionPool:
 case class Connection():
     def runQuery(query: String): Task[Unit] =
       ZIO.succeed(println(s"Running query: $query"))
-
