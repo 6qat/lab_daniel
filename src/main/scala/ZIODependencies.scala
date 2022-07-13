@@ -128,3 +128,5 @@ object ZIODependencies extends ZIOAppDefault:
     val printlnEffect: IO[IOException, Unit] = Console.printLine("Test...")
 
     override def run = runnableProgram_v3
+
+end ZIODependencies
