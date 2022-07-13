@@ -25,4 +25,12 @@ object ZIODependencies extends ZIOAppDefault:
     later = 0
 
     // program  // program_v2.provide(ZLayer.fromZIO(subscriptionService))
-    override def run = program_v2.provide(userSubscriptionLayer_v2)
+    val runnableProgram = program_v2.provide(userSubscriptionLayer_v2)
+    val runnableProgram_v2 = program_v2.provide(
+      UserSubscription.live,
+      EmailService.live,
+      UserDatabase.live,
+      ConnectionPool.live(8)
+    )
+
+    override def run = runnableProgram_v2

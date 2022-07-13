@@ -19,6 +19,9 @@ object UserSubscription:
     ): UserSubscription =
       UserSubscription(emailService, userDatabase)
 
+    val live: ZLayer[EmailService & UserDatabase, Nothing, UserSubscription] =
+      ZLayer.fromFunction(create _)
+
 case class User(name: String, email: String)
 
 class EmailService:
@@ -28,6 +31,8 @@ class EmailService:
 object EmailService:
     def create(): EmailService =
       EmailService()
+    val live: ZLayer[Any, Nothing, EmailService] =
+      ZLayer.succeed(create())
 
 class UserDatabase(connectionPool: ConnectionPool):
     def insert(user: User): Task[Unit] =
@@ -39,6 +44,8 @@ class UserDatabase(connectionPool: ConnectionPool):
 object UserDatabase:
     def create(connectionPool: ConnectionPool): UserDatabase =
       UserDatabase(connectionPool)
+    val live: ZLayer[ConnectionPool, Nothing, UserDatabase] =
+      ZLayer.fromFunction(create _)
 
 class ConnectionPool(nConnections: Int):
     def get: Task[Connection] =
@@ -52,6 +59,8 @@ class ConnectionPool(nConnections: Int):
 object ConnectionPool:
     def create(nConnections: Int): ConnectionPool =
       ConnectionPool(nConnections)
+    def live(n: Int): ZLayer[Any, Nothing, ConnectionPool] =
+      ZLayer.succeed(create(n))
 
 case class Connection():
     def runQuery(query: String): Task[Unit] =
