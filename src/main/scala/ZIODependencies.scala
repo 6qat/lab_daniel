@@ -7,6 +7,61 @@ import java.util.concurrent.TimeUnit
 
 object ZIODependencies extends ZIOAppDefault:
 
+    val subscriptionService: UIO[UserSubscription] =
+      ZIO.succeed( // Dependency injection
+        UserSubscription.create(
+          EmailService.create(),
+          UserDatabase.create(
+            ConnectionPool.create(8)
+          )
+        )
+      )
+
+    def subscribe(user: User): Task[Unit] =
+      for
+          sub <- subscriptionService
+          _ <- sub.subscribeUser(user)
+      yield ()
+
+    def subscribe_v2(user: User): ZIO[UserSubscription, Throwable, Unit] =
+      for
+          // sub is of type ZIO[UserSubscription, Nothing, UserSubscriptionService
+          sub <- ZIO.service[UserSubscription]
+          _ <- sub.subscribeUser(user)
+      yield ()
+
+    /** ZLayers
+      */
+
+    val connectionPoolLayer: ZLayer[Any, Nothing, ConnectionPool] =
+      ZLayer.succeed(ConnectionPool.create(8))
+
+    val databaseLayer: ZLayer[ConnectionPool, Nothing, UserDatabase] =
+      ZLayer.fromFunction(UserDatabase.create _)
+
+    val emailServiceLayer: ZLayer[Any, Nothing, EmailService] =
+      ZLayer.fromFunction(EmailService.create _)
+
+    val userSubscriptionServiceLayer
+      : ZLayer[EmailService & UserDatabase, Nothing, UserSubscription] =
+      ZLayer.fromFunction(UserSubscription.create _)
+
+    // composing layers
+    // vertical layer >>>
+    val databaseLayerFull: ZLayer[Any, Nothing, UserDatabase] =
+      connectionPoolLayer >>> databaseLayer
+    // horizontal layer ++ : combine the dependencies of  both layers AND the values
+    // of both layers
+    val subscriptionRequirementsLayer
+      : ZLayer[Any, Nothing, UserDatabase & EmailService] =
+      databaseLayerFull ++ emailServiceLayer
+
+    val userSubscriptionLayer: ZLayer[Any, Nothing, UserSubscription] =
+      subscriptionRequirementsLayer >>> userSubscriptionServiceLayer
+
+    val userSubscriptionLayer_v2: ZLayer[Any, Nothing, UserSubscription] =
+      databaseLayerFull ++ emailServiceLayer >>> userSubscriptionLayer
+
     // app to subscribe users to newsletter
 
     val program: Task[Unit] =
