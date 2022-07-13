@@ -92,10 +92,19 @@ val databaseLayer: ZLayer[ConnectionPool, Nothing, UserDatabase] =
 val emailServiceLayer: ZLayer[Any, Nothing, EmailService] =
   ZLayer.fromFunction(EmailService.create _)
 
-val userSubscriptionServiceLayer: ZLayer[EmailService & UserDatabase, Nothing, UserSubscription] =
+val userSubscriptionServiceLayer
+  : ZLayer[EmailService & UserDatabase, Nothing, UserSubscription] =
   ZLayer.fromFunction(UserSubscription.create _)
 
 // composing layers
-
+// vertical layer >>>
 val databaseLayerFull: ZLayer[Any, Nothing, UserDatabase] =
   connectionPoolLayer >>> databaseLayer
+// horizontal layer ++ : combine the dependencies of  both layers AND the values
+// of both layers
+val subscriptionRequirementsLayer
+  : ZLayer[Any, Nothing, UserDatabase & EmailService] =
+  databaseLayerFull ++ emailServiceLayer
+
+val userSubscriptionLayer: ZLayer[Any, Nothing, UserSubscription] =
+  subscriptionRequirementsLayer >>> userSubscriptionServiceLayer
