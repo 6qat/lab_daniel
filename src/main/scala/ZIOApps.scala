@@ -14,11 +14,11 @@ object ZIOApps {
 
     given trace: Trace = Trace.empty
 
-    Unsafe.unsafeCompat { unsafe =>
-      given u: Unsafe = unsafe
+    Unsafe.unsafeCompat { unsafe ⇒
+        given u: Unsafe = unsafe
 
-      val output: Exit[Nothing, Int] = runtime.unsafe.run(meaningOfLife)
-      println(output)
+        val output: Exit[Nothing, Int] = runtime.unsafe.run(meaningOfLife)
+        println(output)
     }
   }
 
@@ -28,7 +28,7 @@ object BetterApp extends ZIOAppDefault {
 
   // provides runtime, trace, ...
   override def run: ZIO[Any & (ZIOAppArgs & Scope), Any, Any] =
-    //ZIOApps.meaningOfLife.flatMap(mol => ZIO.succeed(println(mol)))
+    // ZIOApps.meaningOfLife.flatMap(mol => ZIO.succeed(println(mol)))
     ZIOApps.meaningOfLife.debug
 
 }
@@ -38,7 +38,7 @@ object ManualApp extends ZIOApp {
 
   override def bootstrap: ZLayer[ZIOAppArgs & Scope, Any, Environment] = ???
   override implicit def environmentTag = ???
-  override type Environment = this.type 
+  override type Environment = this.type
 
   override def run = ???
 }
