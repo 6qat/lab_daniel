@@ -22,13 +22,17 @@ object ZIOErrorHandling extends ZIOAppDefault {
     anAttempt.catchAll(e => ZIO.attempt(s"Still an error $e"))
 
   val cannotFailAnymore: ZIO[Any, Nothing, Any] =
-    anAttempt.catchAll(e => ZIO.succeed(s"Returning a different value because $e"))
+    anAttempt.catchAll(e =>
+      ZIO.succeed(s"Returning a different value because $e")
+    )
 
   // catchSome function KEEPS the error channel. It actually broader the error channel
-  val catchSelectiveErrors: ZIO[Any, Throwable | String, Any] = anAttempt.catchSome {
-    case e: RuntimeException => ZIO.succeed(s"Ignoring runtime exceptions: $e")
-    case _ => ZIO.fail("Ignoring everything else")
-  }
+  val catchSelectiveErrors: ZIO[Any, Throwable | String, Any] =
+    anAttempt.catchSome {
+      case e: RuntimeException =>
+        ZIO.succeed(s"Ignoring runtime exceptions: $e")
+      case _ => ZIO.fail("Ignoring everything else")
+    }
 
   val aBetterAttempt: ZIO[Any, Nothing, Int] =
     anAttempt.orElse(ZIO.succeed(30))
@@ -78,12 +82,14 @@ object ZIOErrorHandling extends ZIOAppDefault {
   def callHTTPEndpoint_v2(url: String): ZIO[Any, IOException, String] =
     callHTTPEndpointWideError(url).refineOrDie[IOException] {
       case e: IOException => e
-      case _: NoRouteToHostException =>  new IOException(s"No route to host to $url")
+      case _: NoRouteToHostException =>
+        new IOException(s"No route to host to $url")
     }
 
-  val endpointCallWithError: ZIO[Any, String, String] = endpointCallWithDefects.unrefine{
-    case e => e.getMessage
-  }
+  val endpointCallWithError: ZIO[Any, String, String] =
+    endpointCallWithDefects.unrefine { case e =>
+      e.getMessage
+    }
 
   // Combining effects with different errors
 
@@ -99,7 +105,6 @@ object ZIOErrorHandling extends ZIOAppDefault {
     page <- callApi
     rowsAffected <- queryDb
   } yield (page, rowsAffected)
-
 
   override def run = cannotFailAnymore
 
