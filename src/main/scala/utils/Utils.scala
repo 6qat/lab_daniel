@@ -3,10 +3,10 @@ package utils
 
 import zio.ZIO
 
-def logError[E](error: E): Unit =
+def printMessageError[E](error: E): Unit =
   println(s"Fiber [${Thread.currentThread().getName}] failed: $error")
 
-def logSucceed[A](value: A): Unit =
+def printMessageSucceed[A](value: A): Unit =
   println(
     s"Fiber [${Thread.currentThread().getName}] succeeded: $value"
   )
@@ -19,21 +19,21 @@ extension [R, E, A](zio: ZIO[R, E, A])
       zio.tapBoth(
         error =>
           ZIO.succeed(
-            logError(error)
+            printMessageError(error)
           ) *> ZIO.fail(error),
         value =>
           ZIO.succeed(
             println(
-              logSucceed(value)
+              printMessageSucceed(value)
             )
           ) *> ZIO.succeed(value)
       )
     def debugThreadSucceed: ZIO[R, E, A] =
-      zio.tap(value => ZIO.succeed(logSucceed(value)))
+      zio.tap(value => ZIO.succeed(printMessageSucceed(value)))
 
     def debugThreadEither: ZIO[R, E, A] =
       zio.tapEither(either =>
         either match
-            case Right(value) => ZIO.succeed(logSucceed(value))
-            case Left(value)  => ZIO.succeed(logError(value))
+            case Right(value) => ZIO.succeed(printMessageSucceed(value))
+            case Left(value)  => ZIO.succeed(printMessageError(value))
       )
