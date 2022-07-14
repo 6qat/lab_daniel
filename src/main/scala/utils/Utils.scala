@@ -3,6 +3,9 @@ package utils
 
 import zio.ZIO
 
+def logError(error: String) =
+  println(s"Fiber [${Thread.currentThread().getName}] failed: $error")
+
 extension [R, E, A](zio: ZIO[R, E, A])
   def debugThread: ZIO[R, E, A] =
     // tap() produces the effect AFTER the original zio is evaluated
