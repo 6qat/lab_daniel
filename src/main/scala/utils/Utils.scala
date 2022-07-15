@@ -1,18 +1,21 @@
 package tc.lab.daniel
 package utils
 
+import akka.actor.typed.ActorSystem
+import akka.stream.scaladsl.RunnableGraph
 import zio.ZIO
 
-def printMessageError[E](error: E): Unit =
-  println(s"Fiber [${Thread.currentThread().getName}] failed: $error")
+def printMessageError[E](error: E, pre: String = ""): Unit =
+  println(s"${pre}Fiber [${Thread.currentThread().getName}] failed: $error")
 
-def printMessageSucceed[A](value: A): Unit =
+def printMessageSucceed[A](value: A, pre: String = ""): Unit =
   println(
-    s"Fiber [${Thread.currentThread().getName}] succeeded: $value"
+    s"${pre}Fiber [${Thread.currentThread().getName}] succeeded: $value"
   )
 
 extension [R, E, A](zio: ZIO[R, E, A])
-    def debugThread: ZIO[R, E, A] = debugThreadEither
+    def debugThread: ZIO[R, E, A] =
+      debugThreadEither
 
     def debugThreadBoth: ZIO[R, E, A] =
       // tap() produces the effect AFTER the original zio is evaluated
@@ -37,3 +40,6 @@ extension [R, E, A](zio: ZIO[R, E, A])
             case Right(value) => ZIO.succeed(printMessageSucceed(value))
             case Left(value)  => ZIO.succeed(printMessageError(value))
       )
+
+extension [M](graph: RunnableGraph[M])
+  def runZIO(system: ActorSystem[Nothing]): String = "teste"

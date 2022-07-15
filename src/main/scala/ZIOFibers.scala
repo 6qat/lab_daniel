@@ -73,13 +73,13 @@ object ZIOFibers extends ZIOAppDefault:
 
     val chainedFibers: ZIO[Any, Nothing, String] =
       for
-          fib1: Fiber[String, Nothing] <- ZIO
+          fiber1: Fiber[String, Nothing] <- ZIO
             .fail("Not good")
             .debugThread
             .fork
-          fib2: Fiber[Nothing, String] <- ZIO.succeed("Ok").debugThread.fork
-          fib = fib1.orElse(fib2)
-          result <- fib.join
+          fiber2: Fiber[Nothing, String] <- ZIO.succeed("Ok").debugThread.fork
+          fiber: Fiber[Nothing, String] = fiber1.orElse(fiber2)
+          result: String <- fiber.join
       yield result
 
     override def run = chainedFibers.debugThread
