@@ -31,8 +31,10 @@ extension [R, E, A](zio: ZIO[R, E, A])
             )
           ) *> ZIO.succeed(value)
       )
-    def debugThreadSucceed: ZIO[R, E, A] =
-      zio.tap(value => ZIO.succeed(printMessageSucceed(value)))
+    def debugThreadDaniel: ZIO[R, E, A] =
+      zio
+        .tap(value => ZIO.succeed(printMessageSucceed(value)))
+        .tapErrorCause(cause => ZIO.succeed(printMessageError(cause)))
 
     def debugThreadEither: ZIO[R, E, A] =
       zio.tapEither(either =>

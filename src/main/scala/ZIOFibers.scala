@@ -8,6 +8,8 @@ object ZIOFibers extends ZIOAppDefault:
     val meaningOfLife: ZIO[Any, Nothing, Int] = ZIO.succeed(10)
     val favLang: ZIO[Any, Nothing, String] = ZIO.succeed("Scala")
 
+    def createFiber: Fiber[Throwable, String] = ???
+
     val combinator: ZIO[Any, Nothing, (Int, String)] =
       for
           mol <- meaningOfLife.debugThread
@@ -82,4 +84,4 @@ object ZIOFibers extends ZIOAppDefault:
           result: String <- fiber.join
       yield result
 
-    override def run = chainedFibers.debugThread
+    override def run = peekFiber.debugThreadDaniel
