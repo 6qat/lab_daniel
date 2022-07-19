@@ -77,11 +77,31 @@ object ZIOFibers extends ZIOAppDefault:
       for
           fiber1: Fiber[String, Nothing] <- ZIO
             .fail("Not good")
-            .debugThread
+            .debugThreadDaniel
             .fork
           fiber2: Fiber[Nothing, String] <- ZIO.succeed("Ok").debugThread.fork
           fiber: Fiber[Nothing, String] = fiber1.orElse(fiber2)
           result: String <- fiber.join
       yield result
 
-    override def run = peekFiber.debugThreadDaniel
+    /** Exercises
+      *   1. Zip 2 fibers without using the zip combinator hing (hint: create a
+      *      fiber that waits for both) 2. Same thing with orElse
+      */
+
+    def zipFibers[E, E1 <: E, E2 <: E, A, B](
+      fiber1: Fiber[E1, A],
+      fiber2: Fiber[E2, B]
+    ): ZIO[Any, Nothing, Fiber[E, (A, B)]] =
+      (for
+          a <- fiber1.join
+          b <- fiber2.join
+      yield (a, b)).fork
+
+    def orElseFibers[E, A](
+      fiber1: Fiber[E, A],
+      fiber2: Fiber[E, A]
+    ): ZIO[Any, Nothing, Fiber[E, A]] =
+      fiber1.join.orElse(fiber2.join).fork
+
+    override def run = chainedFibers.debugThread
