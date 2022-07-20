@@ -1,4 +1,6 @@
 package tc.lab.daniel
+import utils.*
+
 import zio.*
 
 object ZIOParallelism extends ZIOAppDefault {
@@ -24,5 +26,25 @@ object ZIOParallelism extends ZIOAppDefault {
           ZIO.failCause(causea && causeb)
       }
 
-  def run = ???
+  // parallel combinators
+  // zipPar, zipWithPar
+
+  // collectAllPar
+  val effects: Seq[ZIO[Any, Nothing, Int]] =
+    (1 to 10).map(i => ZIO.succeed(i).debugThread)
+
+  val collectedValues: ZIO[Any, Nothing, Seq[Int]] =
+    ZIO.collectAllPar(effects) // "traverse"
+  val collectedValuesDiscarded: ZIO[Any, Nothing, Unit] =
+    ZIO.collectAllParDiscard(effects) // just side effects executed
+
+  // foreachPar
+  val printlnParallel: ZIO[Any, Nothing, List[Unit]] =
+    ZIO.foreachPar((1 to 10).toList)(i => ZIO.succeed(println(i)))
+
+  // reduceAllPar, mergeAllPar
+  val sumPar = ZIO.reduceAllPar(ZIO.succeed(0), effects)(_ + _)
+  val sumPar_v2 = ZIO.mergeAllPar(effects)(0)(_ + _)
+
+  def run = sumPar.debugThread
 }
