@@ -14,7 +14,7 @@ object ZIOApps {
 
     given trace: Trace = Trace.empty
 
-    Unsafe.unsafeCompat { unsafe ⇒
+    Unsafe.unsafeCompat { unsafe =>
         given u: Unsafe = unsafe
 
         val output: Exit[Nothing, Int] = runtime.unsafe.run(meaningOfLife)

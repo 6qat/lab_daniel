@@ -12,8 +12,8 @@ class UserSubscription(
 ):
     def subscribeUser(user: User): Task[Unit] =
       for
-          _ ← emailService.email(user)
-          _ ← userDatabase.insert(user)
+          _ <- emailService.email(user)
+          _ <- userDatabase.insert(user)
       yield ()
 
 object UserSubscription:
@@ -39,8 +39,8 @@ object EmailService:
 class UserDatabase(connectionPool: ConnectionPool):
     def insert(user: User): Task[Unit] =
       for
-          connection ← connectionPool.get
-          _ ← connection.runQuery(s"Insert $user into database")
+          connection <- connectionPool.get
+          _ <- connection.runQuery(s"Insert $user into database")
       yield ()
 
 object UserDatabase:

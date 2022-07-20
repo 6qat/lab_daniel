@@ -58,14 +58,14 @@ object Effects {
       - produces values of type A if the computation is successful
       - side effects are required, but construction is SEPARATE from execution
    */
-  case class MyIO[A](unsafeRun: () ⇒ A) {
-    def map[B](f: A ⇒ B): MyIO[B] =
-      MyIO(() ⇒ f(unsafeRun()))
-    def flatMap[B](f: A ⇒ MyIO[B]): MyIO[B] =
-      MyIO(() ⇒ f(unsafeRun()).unsafeRun())
+  case class MyIO[A](unsafeRun: () => A) {
+    def map[B](f: A => B): MyIO[B] =
+      MyIO(() => f(unsafeRun()))
+    def flatMap[B](f: A => MyIO[B]): MyIO[B] =
+      MyIO(() => f(unsafeRun()).unsafeRun())
   }
 
-  val anIOWithSideEffects = MyIO { () ⇒
+  val anIOWithSideEffects = MyIO { () =>
       println("Blabla")
       42
   }
@@ -73,39 +73,39 @@ object Effects {
   /*
       A simplified ZIO
    */
-  case class MyIO_v2[-R, +E, +A](unsafeRun: R ⇒ Either[E, A]) {
-    def map[B](f: A ⇒ B): MyIO_v2[R, E, B] =
-      MyIO_v2(r ⇒
+  case class MyIO_v2[-R, +E, +A](unsafeRun: R => Either[E, A]) {
+    def map[B](f: A => B): MyIO_v2[R, E, B] =
+      MyIO_v2(r =>
         unsafeRun(r) match {
-          case Left(e) ⇒ Left(e)
-          case Right(value) ⇒ Right(f(value))
+          case Left(e)      => Left(e)
+          case Right(value) => Right(f(value))
         }
       )
 
     def flatMap[R1 <: R, E1 >: E, B](
-      f: A ⇒ MyIO_v2[R1, E1, B]
+      f: A => MyIO_v2[R1, E1, B]
     ): MyIO_v2[R1, E1, B] =
-      MyIO_v2(r ⇒
+      MyIO_v2(r =>
         unsafeRun(r) match {
-          case Left(e) ⇒ Left(e)
-          case Right(value) ⇒ f(value).unsafeRun(r)
+          case Left(e)      => Left(e)
+          case Right(value) => f(value).unsafeRun(r)
         }
       )
   }
 
   // Exercises
 
-  val currentTime: MyIO[Long] = MyIO(() ⇒ System.currentTimeMillis())
+  val currentTime: MyIO[Long] = MyIO(() => System.currentTimeMillis())
 
   def measure[A](computation: MyIO[A]): MyIO[(Long, A)] = for {
-    initialTime ← currentTime
-    result ← computation
-    endTime ← currentTime
+    initialTime <- currentTime
+    result <- computation
+    endTime <- currentTime
   } yield (endTime - initialTime, result)
 
   def demoMeasurement(): Unit = {
 
-    val computation = MyIO(() ⇒ {
+    val computation = MyIO(() => {
       println("Crunching numbers...")
       Thread.sleep(1000)
       println("Done!")
@@ -117,14 +117,14 @@ object Effects {
 
   }
 
-  val readLine: MyIO[String] = MyIO(() ⇒ StdIn.readLine())
+  val readLine: MyIO[String] = MyIO(() => StdIn.readLine())
 
-  def putStrLn(line: String): MyIO[Unit] = MyIO(() ⇒ println(line))
+  def putStrLn(line: String): MyIO[Unit] = MyIO(() => println(line))
 
   val program = for {
-    _ ← putStrLn("What is your name?")
-    name ← readLine
-    _ ← putStrLn(s"Hello, $name")
+    _ <- putStrLn("What is your name?")
+    name <- readLine
+    _ <- putStrLn(s"Hello, $name")
   } yield ()
 
   def main(args: Array[String]): Unit = {

@@ -19,19 +19,19 @@ object ZIOErrorHandling extends ZIOAppDefault {
   }
 
   val stillCanFail: ZIO[Any, Throwable, Any] =
-    anAttempt.catchAll(e ⇒ ZIO.attempt(s"Still an error $e"))
+    anAttempt.catchAll(e => ZIO.attempt(s"Still an error $e"))
 
   val cannotFailAnymore: ZIO[Any, Nothing, Any] =
-    anAttempt.catchAll(e ⇒
+    anAttempt.catchAll(e =>
       ZIO.succeed(s"Returning a different value because $e")
     )
 
   // catchSome function KEEPS the error channel. It actually broader the error channel
   val catchSelectiveErrors: ZIO[Any, Throwable | String, Any] =
     anAttempt.catchSome {
-      case e: RuntimeException ⇒
+      case e: RuntimeException =>
         ZIO.succeed(s"Ignoring runtime exceptions: $e")
-      case _ ⇒ ZIO.fail("Ignoring everything else")
+      case _ => ZIO.fail("Ignoring everything else")
     }
 
   val aBetterAttempt: ZIO[Any, Nothing, Int] =
@@ -39,14 +39,14 @@ object ZIOErrorHandling extends ZIOAppDefault {
 
   val handleBoth: URIO[Any, String] =
     anAttempt.fold(
-      ex ⇒ s"Something bad happened $ex",
-      value ⇒ s"Length of the string was $value"
+      ex => s"Something bad happened $ex",
+      value => s"Length of the string was $value"
     )
 
   val handleBoth_v2 =
     anAttempt.foldZIO(
-      ex ⇒ ZIO.succeed(s"Something bad happened $ex"),
-      value ⇒ ZIO.succeed(s"Length of the string was $value")
+      ex => ZIO.succeed(s"Something bad happened $ex"),
+      value => ZIO.succeed(s"Length of the string was $value")
     )
 
   val aTryToZio: Task[Int] = ZIO.fromTry(Try(42 / 0))
@@ -81,13 +81,13 @@ object ZIOErrorHandling extends ZIOAppDefault {
 
   def callHTTPEndpoint_v2(url: String): ZIO[Any, IOException, String] =
     callHTTPEndpointWideError(url).refineOrDie[IOException] {
-      case e: IOException ⇒ e
-      case _: NoRouteToHostException ⇒
+      case e: IOException => e
+      case _: NoRouteToHostException =>
         new IOException(s"No route to host to $url")
     }
 
   val endpointCallWithError: ZIO[Any, String, String] =
-    endpointCallWithDefects.unrefine { case e ⇒
+    endpointCallWithDefects.unrefine { case e =>
       e.getMessage
     }
 
@@ -102,8 +102,8 @@ object ZIOErrorHandling extends ZIOAppDefault {
   val callApi: ZIO[Any, IndexError, String] = ZIO.succeed("page: <html></html>")
   val queryDb: ZIO[Any, DbError, Int] = ZIO.succeed(1)
   val combinedApi: ZIO[Any, IndexError | DbError, (String, Int)] = for {
-    page ← callApi
-    rowsAffected ← queryDb
+    page <- callApi
+    rowsAffected <- queryDb
   } yield (page, rowsAffected)
 
   override def run = cannotFailAnymore
