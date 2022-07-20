@@ -38,6 +38,13 @@ object ZIOInterruptions extends ZIOAppDefault {
       _ <- parentFiber.join
   yield ()
 
+  // recing
+  val slowEffect = (ZIO.sleep(5.seconds) *> ZIO.succeed("slow").debugThread)
+    .onInterrupt(ZIO.succeed("[slow] interrupted").debugThread)
+  val fastEffect = (ZIO.sleep(2.seconds) *> ZIO.succeed("fast").debugThread)
+    .onInterrupt(ZIO.succeed("[fast] interrupted").debugThread)
+  val aRace = slowEffect.race(fastEffect)
+
   // =======================================================================
 
   def timeout[R, E, A](zio: ZIO[R, E, A], time: Duration): ZIO[R, E, A] =
@@ -56,5 +63,5 @@ object ZIOInterruptions extends ZIOAppDefault {
     value => ZIO.succeed(Some(value))
   )
 
-  def run = testOutlivingParent
+  def run = aRace // .fork // *> ZIO.sleep(3.seconds) // testOutlivingParent
 }
