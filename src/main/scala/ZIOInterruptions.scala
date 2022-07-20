@@ -21,6 +21,25 @@ object ZIOInterruptions extends ZIOAppDefault {
       result <- fiber.join
   yield result
 
+  /*
+    Automatic interruption
+   */
+
+  // outliving a parent fiber
+  val parentEffect =
+    ZIO.succeed("spawning fiber").debugThread *>
+      zioWithTime.fork *>
+      ZIO.sleep(1.second) *>
+      ZIO.succeed("parent successful").debugThread
+
+  val testOutlivingParent = for
+      parentFiber <- parentEffect.fork
+      _ <- ZIO.sleep(3.seconds)
+      _ <- parentFiber.join
+  yield ()
+
+  // =======================================================================
+
   def timeout[R, E, A](zio: ZIO[R, E, A], time: Duration): ZIO[R, E, A] =
     for
         fiber <- zio.fork
@@ -37,5 +56,5 @@ object ZIOInterruptions extends ZIOAppDefault {
     value => ZIO.succeed(Some(value))
   )
 
-  def run = interruption
+  def run = testOutlivingParent
 }
