@@ -67,5 +67,20 @@ object ZIOResources extends ZIOAppDefault {
   val fetchWithScopedResource: ZIO[Any, Nothing, Unit] =
     ZIO.scoped(fetchWithResource)
 
-  def run = fetchWithScopedResource
+  // acquireReleaseWith
+  val cleanConnection_v2 =
+    ZIO.acquireReleaseWith(Connection.create("rockthejvm.com"))(_.close())(
+      conn => conn.open() *> Clock.sleep(300.seconds)
+    )
+
+  val fetchWithResource_v2 =
+    for
+        fiber <- cleanConnection_v2.fork
+        _ <- Clock.sleep(1.second) *> ZIO
+          .succeed("interrupting")
+          .debugThread *> fiber.interrupt
+        _ <- fiber.join
+    yield ()
+
+  def run = fetchWithResource_v2
 }
