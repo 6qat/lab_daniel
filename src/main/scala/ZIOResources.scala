@@ -34,7 +34,7 @@ object ZIOResources extends ZIOAppDefault {
           .succeed("interrupting")
           .debugThread *> fiber.interrupt
         _ <- fiber.join
-    yield ()
+    yield () // connection leak
 
   val correctFetchUrl =
     for
@@ -46,7 +46,26 @@ object ZIOResources extends ZIOAppDefault {
           .succeed("interrupting")
           .debugThread *> fiber.interrupt
         _ <- fiber.join
+    yield () // prevents connection leak
+
+  // acquireRelease
+  val cleanConnection: ZIO[Scope, Nothing, Connection] =
+    ZIO.acquireRelease(Connection.create("rockthejvm.com"))(_.close())
+
+  // *** In the main application, Scope will automatically be provided
+  val fetchWithResource: ZIO[Scope, Nothing, Unit] =
+    for
+        conn <- cleanConnection
+        fiber <- (conn.open() *> Clock.sleep(300.seconds)).fork
+        _ <- Clock.sleep(1.second) *> ZIO
+          .succeed("interrupting")
+          .debugThread *> fiber.interrupt
+        _ <- fiber.join
     yield ()
 
-  def run = correctFetchUrl
+  // not really needed when running the effect direct on the main run method.
+  val fetchWithScopedResource: ZIO[Any, Nothing, Unit] =
+    ZIO.scoped(fetchWithResource)
+
+  def run = fetchWithScopedResource
 }
