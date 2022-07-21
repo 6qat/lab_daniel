@@ -73,7 +73,7 @@ object ZIOResources extends ZIOAppDefault {
       conn => conn.open() *> Clock.sleep(300.seconds)
     )
 
-  val fetchWithResource_v2 =
+  val fetchWithResource_v2: ZIO[Any, Nothing, Unit] =
     for
         fiber <- cleanConnection_v2.fork
         _ <- Clock.sleep(1.second) *> ZIO
