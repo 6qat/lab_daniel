@@ -46,5 +46,7 @@ object ZIOParallelism extends ZIOAppDefault {
   val sumPar = ZIO.reduceAllPar(ZIO.succeed(0), effects)(_ + _)
   val sumPar_v2 = ZIO.mergeAllPar(effects)(0)(_ + _)
 
+  val temp = ZIO.attempt("")
+
   def run = sumPar.debugThread
 }
