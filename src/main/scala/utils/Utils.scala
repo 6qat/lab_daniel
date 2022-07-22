@@ -5,6 +5,8 @@ import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.RunnableGraph
 import zio.ZIO
 
+import scala.annotation.unused
+
 def printMessageError[E](error: E, pre: String = ""): Unit =
   println(s"${pre}Fiber [${Thread.currentThread().getName}] failed: $error")
 
@@ -17,6 +19,7 @@ extension [R, E, A](zio: ZIO[R, E, A])
     def debugThread: ZIO[R, E, A] =
       debugThreadEither
 
+    @unused
     def debugThreadBoth: ZIO[R, E, A] =
       // tap() produces the effect AFTER the original zio is evaluated
       zio.tapBoth(
@@ -43,5 +46,6 @@ extension [R, E, A](zio: ZIO[R, E, A])
             case Left(value)  => ZIO.succeed(printMessageError(value))
       )
 
-extension [M](graph: RunnableGraph[M])
-  def runZIO(system: ActorSystem[Nothing]): String = "teste"
+extension [M](@unused graph: RunnableGraph[M])
+  @unused
+  def runZIO(@unused system: ActorSystem[Nothing]): String = "teste"

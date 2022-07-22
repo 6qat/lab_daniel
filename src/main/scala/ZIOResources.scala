@@ -3,17 +3,20 @@ import utils.*
 
 import zio.*
 
+import scala.annotation.unused
+
 object ZIOResources extends ZIOAppDefault {
 
   // finalizers
   def unsafeMethod(): Int = throw new RuntimeException(
     "Not an int here for you!"
   )
-  val anAttempt = ZIO.attempt(unsafeMethod())
-  val annAttemptWithFinalizer =
+  val anAttempt: Task[Int] = ZIO.attempt(unsafeMethod())
+  val annAttemptWithFinalizer: ZIO[Any, Throwable, Int] =
     anAttempt.ensuring(ZIO.succeed("finalizer").debugThread)
 
-  val anAttemptWith2Finalizers =
+  @unused
+  val anAttemptWith2Finalizers: ZIO[Any, Throwable, Int] =
     annAttemptWithFinalizer.ensuring(ZIO.succeed("finalizer 2").debugThread)
     // onInterrupt, onError, onDone, onExit
 
@@ -26,7 +29,8 @@ object ZIOResources extends ZIOAppDefault {
       def create(url: String): ZIO[Any, Nothing, Connection] =
         ZIO.succeed(new Connection(url))
 
-  val fetchUrl =
+  @unused
+  val fetchUrl: ZIO[Any, Nothing, Unit] =
     for
         conn <- Connection.create("rockthejvm.com")
         fiber <- (conn.open() *> Clock.sleep(300.seconds)).fork
@@ -36,7 +40,8 @@ object ZIOResources extends ZIOAppDefault {
         _ <- fiber.join
     yield () // connection leak
 
-  val correctFetchUrl =
+  @unused
+  val correctFetchUrl: ZIO[Any, Nothing, Unit] =
     for
         conn <- Connection.create("rockthejvm.com")
         fiber <- (conn.open() *> Clock.sleep(300.seconds))
@@ -64,11 +69,12 @@ object ZIOResources extends ZIOAppDefault {
     yield ()
 
   // not really needed when running the effect direct on the main run method.
+  @unused
   val fetchWithScopedResource: ZIO[Any, Nothing, Unit] =
     ZIO.scoped(fetchWithResource)
 
   // acquireReleaseWith
-  val cleanConnection_v2 =
+  val cleanConnection_v2: ZIO[Any, Nothing, Unit] =
     ZIO.acquireReleaseWith(Connection.create("rockthejvm.com"))(_.close())(
       conn => conn.open() *> Clock.sleep(300.seconds)
     )
