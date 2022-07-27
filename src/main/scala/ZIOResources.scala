@@ -34,9 +34,8 @@ object ZIOResources extends ZIOAppDefault {
     for
         conn <- Connection.create("rockthejvm.com")
         fiber <- (conn.open() *> Clock.sleep(300.seconds)).fork
-        _ <- Clock.sleep(1.second) *> ZIO
-          .succeed("interrupting")
-          .debugThread *> fiber.interrupt
+        _ <- Clock.sleep(1.second) *>
+          ZIO.succeed("interrupting").debugThread *> fiber.interrupt
         _ <- fiber.join
     yield () // connection leak
 
