@@ -10,10 +10,12 @@ import scala.util.Try
 object ZIOErrorHandling extends ZIOAppDefault {
 
   @unused
-  val aFailedZIO = ZIO.fail("Something went wrong")
-  val failedWithThrowable = ZIO.fail(new RuntimeException("Boom!!!"))
+  val aFailedZIO: IO[String, Nothing] = ZIO.fail("Something went wrong")
+  val failedWithThrowable: IO[RuntimeException, Nothing] =
+    ZIO.fail(new RuntimeException("Boom!!!"))
   @unused
-  val failedWithDescription = failedWithThrowable.mapError(_.getMessage)
+  val failedWithDescription: ZIO[Any, String, Nothing] =
+    failedWithThrowable.mapError(_.getMessage)
 
   val anAttempt: Task[Int] = ZIO.attempt {
     println("Trying something...")
@@ -22,10 +24,10 @@ object ZIOErrorHandling extends ZIOAppDefault {
   }
 
   @unused
-  val stillCanFail: ZIO[Any, Throwable, Any] =
+  val stillCanFail =
     anAttempt.catchAll(e => ZIO.attempt(s"Still an error $e"))
 
-  val cannotFailAnymore: ZIO[Any, Nothing, Any] =
+  val cannotFailAnymore =
     anAttempt.catchAll(e =>
       ZIO.succeed(s"Returning a different value because $e")
     )
@@ -62,7 +64,7 @@ object ZIOErrorHandling extends ZIOAppDefault {
 
   val anEither: Either[Int, String] = Right("Success")
   @unused
-  val anEithyerToZIO: IO[Int, String] = ZIO.fromEither(anEither)
+  val anEitherToZIO: IO[Int, String] = ZIO.fromEither(anEither)
 
   val eitherZIO: URIO[Any, Either[Throwable, Int]] = anAttempt.either
   @unused
