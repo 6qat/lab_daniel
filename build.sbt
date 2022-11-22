@@ -15,19 +15,19 @@ scalacOptions := Seq(
   // "-language:strictEquality"
 )
 
-val zioVersion = "2.0.0"
-val zioConfigVersion = "3.0.1"
+val zioVersion = "2.0.2"
+val zioConfigVersion = "3.0.2"
 
-val akkaVersion = "2.6.19"
-val akkaHttpVersion = "10.2.9"
+val akkaVersion = "2.7.0"
+val akkaHttpVersion = "10.4.0"
 
 val http4sVersion = "1.0.0-M34"
-val circeVersion = "0.14.2"
+val circeVersion = "0.14.3"
 
-val scalaTestVersion = "3.2.12"
+val scalaTestVersion = "3.2.14"
 
 val baseDependencies = Seq(
-  "org.slf4j" % "slf4j-simple" % "1.7.36"
+  "org.slf4j" % "slf4j-simple" % "2.0.3"
 )
 
 val zioDependencies = Seq(
@@ -45,11 +45,11 @@ val zioDependencies = Seq(
 val akkaDependencies = Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
   "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-  "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
-  "com.typesafe.akka" %% "akka-testkit" % akkaVersion,
-  "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test"
+  "com.typesafe.akka" %% "akka-http" % akkaHttpVersion cross(CrossVersion.for3Use2_13)
+  // "com.typesafe.akka" %% "akka-testkit" % akkaVersion,
+  // "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % "test"
 //  "dev.zio" %% "zio-akka-cluster" % "0.2.0"
-).map(_.cross(CrossVersion.for3Use2_13))
+) //.map(_.cross(CrossVersion.for3Use2_13))
 
 val testDependencies = Seq(
   "org.scalatest" %% "scalatest" % scalaTestVersion % "test"

@@ -11,7 +11,7 @@ object ZIOErrorHandling extends ZIOAppDefault {
 
   @unused
   val aFailedZIO: IO[String, Nothing] = ZIO.fail("Something went wrong")
-  val failedWithThrowable: IO[RuntimeException, Nothing] =
+  private val failedWithThrowable: IO[RuntimeException, Nothing] =
     ZIO.fail(new RuntimeException("Boom!!!"))
   @unused
   val failedWithDescription: ZIO[Any, String, Nothing] =

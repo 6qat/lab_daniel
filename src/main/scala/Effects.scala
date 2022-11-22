@@ -121,7 +121,7 @@ object Effects {
 
   def putStrLn(line: String): MyIO[Unit] = MyIO(() => println(line))
 
-  val program = for {
+  private val program = for {
     _ <- putStrLn("What is your name?")
     name <- readLine
     _ <- putStrLn(s"Hello, $name")
